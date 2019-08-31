@@ -1,0 +1,2 @@
+upload-video-command
+curl -F file=@testvid.mp4 -F start=0 -F end=0 -F speed=1  -F repeat=true localhost:8084/upload

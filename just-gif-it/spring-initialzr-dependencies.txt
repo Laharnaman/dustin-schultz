@@ -1,0 +1,6 @@
+dependencies=web,actuator&
+applicationName=JuftGifItApplication&
+artifactId=just-gif-it&
+description=just-gif-it&
+groupId=schultz.dustin.io&
+packageName=schultz.dustin.io
