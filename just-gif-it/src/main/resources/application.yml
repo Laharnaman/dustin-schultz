@@ -2,12 +2,17 @@
 multipart:
   maxFileSize: 50MB
   maxRequestSize: 50MB
-  location: ${java:io:tmpdir}
+  location: ${java.io.tmpdir}
 
 spring:
   mvc:
     favicon:
       enabled: false
 
+
 #logging:
+com:
+  justgifit:
+    gif-location: ${java.io.tmpdir}/gif
+    optimize: false
 #  level.: debug

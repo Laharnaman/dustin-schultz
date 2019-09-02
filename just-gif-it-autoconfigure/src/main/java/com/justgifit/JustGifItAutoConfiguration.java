@@ -1,12 +1,15 @@
 package com.justgifit;
 
+import com.justgifit.services.ConverterService;
+import com.justgifit.services.GifEncoderService;
+import com.justgifit.services.VideoDecoderService;
 import com.madgag.gif.fmsware.AnimatedGifEncoder;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,16 +19,27 @@ import org.springframework.web.filter.RequestContextFilter;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-import com.justgifit.services.ConverterService;
-import com.justgifit.services.GifEncoderService;
-import com.justgifit.services.VideoDecoderService;
 
-import java.io.File;
+import javax.inject.Inject;
 
 @Configuration
 @ConditionalOnClass({FFmpegFrameGrabber.class, AnimatedGifEncoder.class})
+@EnableConfigurationProperties(JustGifItProperties.class)
 public class JustGifItAutoConfiguration {
 
+    @Inject
+    private JustGifItProperties properties;
+
+    @Bean
+    @ConditionalOnProperty(prefix = "com.justgifit", value = "create-result-dir")
+    public Boolean createResultDirectory() {
+
+        if (!properties.getGifLocation().exists()) {
+            properties.getGifLocation().mkdir();
+        }
+
+        return true;
+    }
 
     @Bean
     @ConditionalOnMissingBean({VideoDecoderService.class})
@@ -48,21 +62,8 @@ public class JustGifItAutoConfiguration {
 
     @Configuration
     @ConditionalOnWebApplication
-    public static class WebConfiguration {
+    public  class WebConfiguration {
 
-        @Value("${multipart.location}/gif/")
-        private String gifLocation;
-
-        @Bean
-        @ConditionalOnProperty(prefix = "com.justgifit", value = "create-result-dir")
-        public Boolean createResultDirectory() {
-            File gifFolder = new File(gifLocation);
-            if (!gifFolder.exists()) {
-                gifFolder.mkdir();
-            }
-
-            return true;
-        }
 
         @Bean
         public WebMvcConfigurer webMvcConfigurer() {
@@ -70,7 +71,7 @@ public class JustGifItAutoConfiguration {
                 @Override
                 public void addResourceHandlers(ResourceHandlerRegistry registry) {
                     registry.addResourceHandler("/gif/**")
-                            .addResourceLocations("file:" + gifLocation);
+                            .addResourceLocations("file:" + properties.getGifLocation());
                     super.addResourceHandlers(registry);
                 }
             };
